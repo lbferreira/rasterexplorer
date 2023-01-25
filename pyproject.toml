@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rasterexplorer"
+version = "0.0.1"
+readme = "README.md"
+description = "A package for quickly viewing raster datasets on an interactive map."
+keywords = ["GIS", "rasterio"]
+requires-python = ">=3.8"
+dependencies = [
+    "folium",
+    "matplotlib",
+    "rasterio",
+]
+
+[tool.setuptools.packages.find]
+include = ["src.rasterexplorer*"]
+
+[tool.black]
+line-length = 88
