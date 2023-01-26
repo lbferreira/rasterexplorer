@@ -8,11 +8,13 @@ import matplotlib.colors as mpl_colors
 import numpy as np
 import rasterio
 from numpy.typing import NDArray
-from raster_data import RasterData
+
+from .raster_data import RasterData
 
 
 def explore(
     input_raster: Union[rasterio.DatasetReader, str, RasterData],
+    label: str,
     band: int = 1,
     folium_map: Optional[folium.Map] = None,
     cmap: str = "RdYlGn",
@@ -26,6 +28,7 @@ def explore(
 
     Args:
         input_raster (Union[rasterio.DatasetReader, str, RasterData]): input raster.
+        label (str): raster label.
         band (int, optional): band to consider in the raster data. Band numbers start from 1.
         This parameter is ignored if input_raster is a RasterData object. Defaults to 1.
         folium_map (Optional[folium.Map], optional): a folium.Map object.
@@ -48,6 +51,7 @@ def explore(
         raster_data = raster_data.to_crs("epsg:4326")
     folium_map = _add_to_map(
         raster_data=raster_data,
+        label=label,
         cmap=cmap,
         vmin=vmin,
         vmax=vmax,
@@ -88,10 +92,11 @@ def _format_input_raster(input_raster: Any, band: int) -> RasterData:
 
 def _add_to_map(
     raster_data: RasterData,
+    label: str,
     cmap: str = "RdYlGn",
     vmin: Optional[float] = None,
     vmax: Optional[float] = None,
-    caption: str = "",
+    cbar_caption: str = "",
     folium_map: Optional[folium.Map] = None,
     tiles: str = "OpenStreetMap",
     attr: Optional[str] = None,
@@ -101,12 +106,13 @@ def _add_to_map(
 
     Args:
         raster_data (RasterData): raster data.
+        label (str): raster label.
         cmap (str, optional): a string representing a matplotlib colormap. Defaults to 'RdYlGn'.
         vmin (Optional[float], optional): the minimum value to consider when plotting raster.
         If None, vmin is obtained from data. Defaults to None.
         vmax (Optional[float], optional): the maximum value to consider when plotting raster.
         If None, vmin is obtained from data. Defaults to None.
-        caption (str, optional): color bar caption. Defaults to ''.
+        cbar_caption (str, optional): color bar caption. Defaults to ''.
         folium_map (Optional[folium.Map], optional): a folium.Map object.
         If None is passed a new map is created. Defaults to None.
         tiles (str, optional): the tiles provider used to create the interactive map.
@@ -131,7 +137,7 @@ def _add_to_map(
             **kwargs
         )
         # Add a colorbar
-        cbar = _create_cbar(cmap=cmap, vmin=vmin, vmax=vmax, caption=caption)
+        cbar = _create_cbar(cmap=cmap, vmin=vmin, vmax=vmax, caption=cbar_caption)
         folium_map.add_child(cbar)
 
     # Adding layer to folium
@@ -140,8 +146,13 @@ def _add_to_map(
     )
     bounds_folium_format = _format_bounds_to_folium(bounds=raster_data.bounds)
     folium.raster_layers.ImageOverlay(
-        colored_array, bounds_folium_format, opacity=1
+        colored_array,
+        bounds_folium_format,
+        opacity=1,
+        name=label,
+        control=True,
     ).add_to(folium_map)
+    folium.LayerControl().add_to(folium_map)
     return folium_map
 
 
