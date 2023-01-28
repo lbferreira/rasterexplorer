@@ -79,3 +79,6 @@ masked_array = RasterData.to_masked_array(values, nodata)
 # values is a numpy array
 # nodata is the value used to represent masked areas
 ```
+
+## Issues
+If you find a bug, please report it as an issue.
