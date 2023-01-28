@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+import warnings
 
 import numpy as np
 import rasterio
@@ -17,13 +18,12 @@ from rasterio.warp import (
 
 class RasterData:
     def __init__(
-        self, data: np.ma.core.MaskedArray, nodata: Any, crs: Any, transform: Affine
+        self, data: np.ma.core.MaskedArray, crs: Any, transform: Affine
     ) -> None:
         """Stores raster data, including metadata.
 
         Args:
             data (np.ma.core.MaskedArray): 2D array with raster data. It must be a numpy masked array.
-            nodata (NDArray[Any]): the value used to represent no data values in the input data.
             crs (Any): a CRS (Coordinate Reference System) of the raster. It can be anything accepted to create a pyproj.CRS object.
             transform (Affine): the raster transform.
         """
@@ -31,20 +31,15 @@ class RasterData:
         self._validade_data_shape(data=data)
         # Set instance attributes
         self._data = data
-        self._nodata = nodata
         self._crs = CRS(crs)
         self._transform = transform
+        self._nodata = self._get_nodata(self._data)
         self._bounds = self._compute_bounds()
 
     @property
     def data(self) -> np.ma.core.MaskedArray[Any]:
         """Raster data as a numpy masked array."""
         return self._data
-
-    @property
-    def nodata(self) -> Any:
-        """Value used to represent no data values."""
-        return self._nodata
 
     @property
     def crs(self) -> CRS:
@@ -55,6 +50,11 @@ class RasterData:
     def transform(self) -> Affine:
         """Raster transform."""
         return self._transform
+
+    @property
+    def nodata(self) -> Any:
+        """Value used to represent no data values. None is returned if nodata is not set."""
+        return self._nodata
 
     @property
     def bounds(self) -> rasterio.coords.BoundingBox:
@@ -72,6 +72,9 @@ class RasterData:
         Returns:
             np.ma.core.MaskedArray: masked array.
         """
+        if nodata is None:
+            return np.ma.masked_array(values)
+
         if np.isnan(nodata):
             mask = np.isnan(values)
         else:
@@ -91,7 +94,6 @@ class RasterData:
         """
         return RasterData(
             data=dataset.read(band, masked=True),
-            nodata=dataset.nodata,
             crs=dataset.crs,
             transform=dataset.transform,
         )
@@ -125,7 +127,6 @@ class RasterData:
 
         reprojected_raster = RasterData(
             data=self.to_masked_array(values=dst_reprojected, nodata=self.nodata),
-            nodata=self.nodata,
             crs=target_crs,
             transform=dst_transform,
         )
@@ -138,6 +139,18 @@ class RasterData:
             raise ValueError(
                 "To create a RasterData object, the parameter data must be a 2D array."
             )
+
+    def _get_nodata(self, masked_array: np.ma.core.MaskedArray) -> Any:
+        try:
+            len(masked_array.mask)
+            nodata = masked_array.fill_value
+        except TypeError:
+            nodata = None
+            warnings.warn(
+                "nodata was not found. Setting nodata to None. "
+                + "To avoid an unexpected behavior, please specify nodata explicitly."
+            )
+        return nodata
 
     def _compute_bounds(self) -> rasterio.coords.BoundingBox:
         """Computes data bounds as a BoundingBox object."""
