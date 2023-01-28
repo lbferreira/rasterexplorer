@@ -20,7 +20,7 @@ def explore(
     cmap: str = "RdYlGn",
     vmin: Optional[float] = None,
     vmax: Optional[float] = None,
-    caption: str = "Scale",
+    cbar_caption: str = "Scale",
     tiles: str = "OpenStreetMap",
     attr: Optional[str] = None,
 ) -> folium.Map:
@@ -38,7 +38,7 @@ def explore(
         If None, vmin is obtained from data. Defaults to None.
         vmax (Optional[float], optional): the maximum value to consider when plotting raster.
         If None, vmin is obtained from data. Defaults to None.
-        caption (str, optional): color bar caption. Defaults to 'Scale'.
+        cbar_caption (str, optional): color bar caption. Defaults to 'Scale'.
         tiles (str, optional): the tiles provider used to create the interactive map.
         Please check folium documentation for more details. Defaults to 'OpenStreetMap'.
         attr (Optional[str], optional): the attribution for a custom tiles server. Defaults to None.
@@ -55,7 +55,7 @@ def explore(
         cmap=cmap,
         vmin=vmin,
         vmax=vmax,
-        caption=caption,
+        cbar_caption=cbar_caption,
         folium_map=folium_map,
         tiles=tiles,
         attr=attr,
