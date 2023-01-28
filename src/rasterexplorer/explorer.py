@@ -79,9 +79,9 @@ def _format_input_raster(input_raster: Any, band: int) -> RasterData:
     if isinstance(input_raster, rasterio.DatasetReader):
         return RasterData.from_rasterio_dataset(dataset=input_raster, band=band)
     elif isinstance(input_raster, str):
-        with rasterio.open("test_raster.tif") as input_raster:
+        with rasterio.open(input_raster) as dataset:
             raster_data = RasterData.from_rasterio_dataset(
-                dataset=input_raster, band=band
+                dataset=dataset, band=band
             )
         return raster_data
     elif isinstance(input_raster, RasterData):
