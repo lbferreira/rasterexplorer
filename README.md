@@ -13,7 +13,7 @@ pip install git+https://github.com/lbferreira/rasterexplorer
 
 ## Usage examples
 When working with raster datasets on a jupyter notebook, quicklying viewing the datasets can be very useful. To do it with rasterexplorer, the following examples can be followed. `input_raster` can be a string with path for the input raster, a DatasetReader object of the lib rasterio, or a RasterData object, which can be created from a numpy masked array.
-```
+```python
 from rasterexplorer import explorer
 
 my_map = explorer.explore(
@@ -27,7 +27,7 @@ my_map
 ![](./docs/images/usage_example1.png)
 
 A custom tile server can be provided as shown below:
-```
+```python
 tiles = "https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}@2x.jpg90?access_token=" + my_token
 attr = 'MapBox'
 my_map = explorer.explore(
@@ -43,7 +43,7 @@ my_map
 ![](./docs/images/usage_example2.png)
 
 When manipulating rasters in the form of numpy arrays, the interactive map can be created passing a RasterData object to the parameter `input_raster` of the explore function. An example is provided below.
-```
+```python
 from rasterexplorer.raster_data import RasterData
 
 # Loading data from .tif files and extrating data as numpy masked arrays
