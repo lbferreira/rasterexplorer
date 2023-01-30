@@ -23,6 +23,7 @@ def explore(
     cbar_caption: str = "Scale",
     tiles: str = "OpenStreetMap",
     attr: Optional[str] = None,
+    add_layer_control: bool = True,
 ) -> folium.Map:
     """Add raster data to an interactive map created using folium.
 
@@ -42,6 +43,10 @@ def explore(
         tiles (str, optional): the tiles provider used to create the interactive map.
         Please check folium documentation for more details. Defaults to 'OpenStreetMap'.
         attr (Optional[str], optional): the attribution for a custom tiles server. Defaults to None.
+        add_layer_control (bool, optional): whether to add a LayerControl object to the map.
+        When using the same folium.Map object for multiple calls of this function,
+        setting `add_layer_control` to True only on the last call can be useful as LayerControl
+        works properly only when it is added as the last map layer. Defaults to True.
 
     Returns:
         folium.Map: the map object.
@@ -59,6 +64,7 @@ def explore(
         folium_map=folium_map,
         tiles=tiles,
         attr=attr,
+        add_layer_control=add_layer_control,
     )
     return folium_map
 
@@ -100,6 +106,7 @@ def _add_to_map(
     folium_map: Optional[folium.Map] = None,
     tiles: str = "OpenStreetMap",
     attr: Optional[str] = None,
+    add_layer_control: bool = True,
     **kwargs
 ) -> folium.Map:
     """Add raster data to a folium map.
@@ -118,6 +125,10 @@ def _add_to_map(
         tiles (str, optional): the tiles provider used to create the interactive map.
         Please check folium documentation for more details. Defaults to 'OpenStreetMap'.
         attr (Optional[str], optional): the attribution for a custom tiles server. Defaults to None.
+        add_layer_control (bool, optional): whether to add a LayerControl object to the map.
+        When using the same folium.Map object for multiple calls of this function,
+        setting `add_layer_control` to True only on the last call can be useful as LayerControl
+        works properly only when it is added as the last map layer. Defaults to True.
 
     Returns:
         folium.Map: a folium map object.
@@ -133,7 +144,7 @@ def _add_to_map(
             location=[mean_lat, mean_long],
             tiles=tiles,
             attr=attr,
-            zoom_start=16,
+            zoom_start=kwargs.pop('zoom_start', 16),
             **kwargs
         )
         # Add a colorbar
@@ -152,7 +163,8 @@ def _add_to_map(
         name=label,
         control=True,
     ).add_to(folium_map)
-    folium.LayerControl().add_to(folium_map)
+    if add_layer_control:
+        folium.LayerControl().add_to(folium_map)
     return folium_map
 
 
