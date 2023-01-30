@@ -49,6 +49,7 @@ from rasterexplorer.raster_data import RasterData
 # Loading data from .tif files and extrating data as numpy masked arrays
 with rasterio.open('./example_data/sentinel2/area1/b4.tif') as dataset:
     band4 = dataset.read(1, masked=True)
+    band4_nodata = dataset.nodata
     band4_crs = dataset.crs
     band4_transform = dataset.transform
 with rasterio.open('./example_data/sentinel2/area1/b8.tif') as dataset:
@@ -58,9 +59,12 @@ with rasterio.open('./example_data/sentinel2/area1/b8.tif') as dataset:
 # NDVI = (NIR - RED) / (NIR + RED) where NIR = band4 nad RED = band8
 ndvi = (band8 - band4) / (band8 + band4)
 
-# Creating a RasterData object. Note that crs and transform from band4 and band8 are the same ones.
-ndvi_raster = RasterData(data=ndvi, crs=band4_crs, transform=band4_transform)
+# Creating a RasterData object
+# Note that nodata, crs and transform from band4 and band8 are the same ones.
+# RasterData can be created passing both conventional and masked numpy arrays.
+ndvi_raster = RasterData(data=ndvi, nodata=band4_nodata, crs=band4_crs, transform=band4_transform)
 
+# Creating map
 my_map = explorer.explore(
     input_raster=ndvi_raster,
     label='My example area 1',
@@ -72,13 +76,6 @@ my_map = explorer.explore(
 my_map
 ```
 ![](./docs/images/usage_example1.png)
-
-If we have data as a conventional numpy array. The following utility method can be used to convert it to a masked array.
-```
-masked_array = RasterData.to_masked_array(values, nodata)
-# values is a numpy array
-# nodata is the value used to represent masked areas
-```
 
 ## Issues
 If you find a bug, please report it as an issue.
