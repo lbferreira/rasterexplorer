@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Union
 import warnings
 
 import numpy as np
@@ -18,28 +18,34 @@ from rasterio.warp import (
 
 class RasterData:
     def __init__(
-        self, data: np.ma.core.MaskedArray, crs: Any, transform: Affine
+        self, data: Union[np.ma.core.MaskedArray, NDArray[Any]], nodata: Any, crs: Any, transform: Affine
     ) -> None:
         """Stores raster data, including metadata.
 
         Args:
-            data (np.ma.core.MaskedArray): 2D array with raster data. It must be a numpy masked array.
+            data (Union[np.ma.core.MaskedArray, NDArray[Any]]): 2D array with raster data.
+            nodata (NDArray[Any]): the value used to represent no data values in the input data. When there is no nodata value, it can be passed as None.
             crs (Any): a CRS (Coordinate Reference System) of the raster. It can be anything accepted to create a pyproj.CRS object.
             transform (Affine): the raster transform.
         """
         # Validade data
         self._validade_data_shape(data=data)
         # Set instance attributes
-        self._data = data
+        self._data = self._prepare_input_data(data, nodata)
+        self._nodata = nodata
         self._crs = CRS(crs)
         self._transform = transform
-        self._nodata = self._get_nodata(self._data)
         self._bounds = self._compute_bounds()
-
+            
     @property
-    def data(self) -> np.ma.core.MaskedArray[Any]:
+    def data(self) -> np.ma.core.MaskedArray:
         """Raster data as a numpy masked array."""
         return self._data
+
+    @property
+    def nodata(self) -> Any:
+        """Value used to represent no data values. None is returned if nodata is not set."""
+        return self._nodata
 
     @property
     def crs(self) -> CRS:
@@ -52,34 +58,9 @@ class RasterData:
         return self._transform
 
     @property
-    def nodata(self) -> Any:
-        """Value used to represent no data values. None is returned if nodata is not set."""
-        return self._nodata
-
-    @property
     def bounds(self) -> rasterio.coords.BoundingBox:
         "Raster bounds."
         return self._bounds
-
-    @staticmethod
-    def to_masked_array(values: NDArray[Any], nodata: Any) -> np.ma.core.MaskedArray:
-        """Convets a conventional numpy array to a masked array.
-
-        Args:
-            values (NDArray[Any]): input array.
-            nodata (Any): the value used to represent no data values in the input array.
-
-        Returns:
-            np.ma.core.MaskedArray: masked array.
-        """
-        if nodata is None:
-            return np.ma.masked_array(values)
-
-        if np.isnan(nodata):
-            mask = np.isnan(values)
-        else:
-            mask = values == nodata
-        return np.ma.masked_array(values, mask)
 
     @staticmethod
     def from_rasterio_dataset(dataset: rasterio.DatasetReader, band: int) -> RasterData:
@@ -92,8 +73,14 @@ class RasterData:
         Returns:
             RasterData: a RasterData object.
         """
+        if dataset.nodata is None:
+            warnings.warn(
+                "nodata is None. "
+                + "To avoid unexpected behavior, please consider using a nodata value."
+            )
         return RasterData(
             data=dataset.read(band, masked=True),
+            nodata=dataset.nodata,
             crs=dataset.crs,
             transform=dataset.transform,
         )
@@ -126,7 +113,8 @@ class RasterData:
         )
 
         reprojected_raster = RasterData(
-            data=self.to_masked_array(values=dst_reprojected, nodata=self.nodata),
+            data=self._to_masked_array(values=dst_reprojected, nodata=self.nodata),
+            nodata=self.nodata,
             crs=target_crs,
             transform=dst_transform,
         )
@@ -140,17 +128,22 @@ class RasterData:
                 "To create a RasterData object, the parameter data must be a 2D array."
             )
 
-    def _get_nodata(self, masked_array: np.ma.core.MaskedArray) -> Any:
-        try:
-            len(masked_array.mask)
-            nodata = masked_array.fill_value
-        except TypeError:
-            nodata = None
-            warnings.warn(
-                "nodata was not found. Setting nodata to None. "
-                + "To avoid an unexpected behavior, please specify nodata explicitly."
-            )
-        return nodata
+    def _prepare_input_data(self, data: Union[np.ma.core.MaskedArray, NDArray], nodata: Any) -> np.ma.core.MaskedArray:
+        """Checks if the input data has a valid type and tranform it to a MaskedArray if needed.
+
+        Args:
+            data (Union[np.ma.core.MaskedArray, NDArray]): 2D array with raster data.
+            nodata (Any): the value used to represent no data values in the input data.
+
+        Returns:
+            np.ma.core.MaskedArray: MaskedArray.
+        """
+        if isinstance(data, np.ma.core.MaskedArray):
+            return data
+        elif isinstance(data, np.ndarray):
+            return self._to_masked_array(values=data, nodata=nodata)
+        else:
+            raise TypeError('To create a RasterData object, input data must be a np.ma.core.MaskedArray or a np.ndarray.')
 
     def _compute_bounds(self) -> rasterio.coords.BoundingBox:
         """Computes data bounds as a BoundingBox object."""
@@ -160,3 +153,22 @@ class RasterData:
         )
         bounds = rasterio.coords.BoundingBox(*bounds)
         return bounds
+
+    def _to_masked_array(self, values: NDArray[Any], nodata: Any) -> np.ma.core.MaskedArray:
+        """Convets a conventional numpy array to a masked array.
+
+        Args:
+            values (NDArray[Any]): input array.
+            nodata (Any): the value used to represent no data values in the input array.
+
+        Returns:
+            np.ma.core.MaskedArray: masked array.
+        """
+        if nodata is None:
+            return np.ma.masked_array(values)
+
+        if np.isnan(nodata):
+            mask = np.isnan(values)
+        else:
+            mask = values == nodata
+        return np.ma.masked_array(values, mask)
