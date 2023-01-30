@@ -18,7 +18,11 @@ from rasterio.warp import (
 
 class RasterData:
     def __init__(
-        self, data: Union[np.ma.core.MaskedArray, NDArray[Any]], nodata: Any, crs: Any, transform: Affine
+        self,
+        data: Union[np.ma.core.MaskedArray, NDArray[Any]],
+        nodata: Any,
+        crs: Any,
+        transform: Affine,
     ) -> None:
         """Stores raster data, including metadata.
 
@@ -36,7 +40,7 @@ class RasterData:
         self._crs = CRS(crs)
         self._transform = transform
         self._bounds = self._compute_bounds()
-            
+
     @property
     def data(self) -> np.ma.core.MaskedArray:
         """Raster data as a numpy masked array."""
@@ -128,7 +132,9 @@ class RasterData:
                 "To create a RasterData object, the parameter data must be a 2D array."
             )
 
-    def _prepare_input_data(self, data: Union[np.ma.core.MaskedArray, NDArray], nodata: Any) -> np.ma.core.MaskedArray:
+    def _prepare_input_data(
+        self, data: Union[np.ma.core.MaskedArray, NDArray], nodata: Any
+    ) -> np.ma.core.MaskedArray:
         """Checks if the input data has a valid type and tranform it to a MaskedArray if needed.
 
         Args:
@@ -143,7 +149,9 @@ class RasterData:
         elif isinstance(data, np.ndarray):
             return self._to_masked_array(values=data, nodata=nodata)
         else:
-            raise TypeError('To create a RasterData object, input data must be a np.ma.core.MaskedArray or a np.ndarray.')
+            raise TypeError(
+                "To create a RasterData object, input data must be a np.ma.core.MaskedArray or a np.ndarray."
+            )
 
     def _compute_bounds(self) -> rasterio.coords.BoundingBox:
         """Computes data bounds as a BoundingBox object."""
@@ -154,7 +162,9 @@ class RasterData:
         bounds = rasterio.coords.BoundingBox(*bounds)
         return bounds
 
-    def _to_masked_array(self, values: NDArray[Any], nodata: Any) -> np.ma.core.MaskedArray:
+    def _to_masked_array(
+        self, values: NDArray[Any], nodata: Any
+    ) -> np.ma.core.MaskedArray:
         """Convets a conventional numpy array to a masked array.
 
         Args:

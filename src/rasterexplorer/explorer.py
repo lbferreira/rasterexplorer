@@ -86,9 +86,7 @@ def _format_input_raster(input_raster: Any, band: int) -> RasterData:
         return RasterData.from_rasterio_dataset(dataset=input_raster, band=band)
     elif isinstance(input_raster, str):
         with rasterio.open(input_raster) as dataset:
-            raster_data = RasterData.from_rasterio_dataset(
-                dataset=dataset, band=band
-            )
+            raster_data = RasterData.from_rasterio_dataset(dataset=dataset, band=band)
         return raster_data
     elif isinstance(input_raster, RasterData):
         return input_raster
@@ -144,7 +142,7 @@ def _add_to_map(
             location=[mean_lat, mean_long],
             tiles=tiles,
             attr=attr,
-            zoom_start=kwargs.pop('zoom_start', 16),
+            zoom_start=kwargs.pop("zoom_start", 16),
             **kwargs
         )
         # Add a colorbar
