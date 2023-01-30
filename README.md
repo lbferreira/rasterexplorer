@@ -69,8 +69,6 @@ my_map = explorer.explore(
     input_raster=ndvi_raster,
     label='My example area 1',
     band=1,
-    tiles=tiles,
-    attr=attr,
     cbar_caption='NDVI',
 )
 my_map
