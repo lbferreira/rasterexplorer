@@ -10,12 +10,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, ]
-        python-version: [ '3.8', '3.9']
         env:
           - environment-dev.yml
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Setup Conda
       uses: conda-incubator/setup-miniconda@v2
@@ -25,13 +24,5 @@ jobs:
         miniforge-variant: Mambaforge
         use-mamba: true
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install .
-    - name: Pachage Test
+    - name: Package Test
       run: pytest
