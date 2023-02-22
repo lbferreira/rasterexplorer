@@ -1,0 +1,22 @@
+name: rasterexplorer-dev
+channels:
+    - conda-forge
+dependencies:
+    - python=3.9.*
+    # required
+    - folium
+    - matplotlib
+    - pyproj
+    - rasterio
+
+    # testing
+    - pytest
+    - pytest-cov
+    - coverage
+    
+    # linting
+    - flake8
+
+    # styling
+    - black
+    #- pre-commit
