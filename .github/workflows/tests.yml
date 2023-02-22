@@ -25,4 +25,6 @@ jobs:
         use-mamba: true
 
     - name: Package Test
-      run: pytest
+      run: |
+        conda activate rasterexplorer-dev
+        pytest
