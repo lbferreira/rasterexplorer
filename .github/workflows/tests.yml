@@ -13,8 +13,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, ]
-        env:
-          - environment-dev.yml
 
     steps:
     - uses: actions/checkout@v3
@@ -22,12 +20,9 @@ jobs:
     - name: Setup Conda
       uses: conda-incubator/setup-miniconda@v2
       with:
-        environment-file: ${{ matrix.env }}
-        miniforge-version: latest
-        miniforge-variant: Mambaforge
-        use-mamba: true
+          activate-environment: rasterexplorer-dev
+          environment-file: environment-dev.yml
+          auto-activate-base: false
 
     - name: Package Test
-      run: |
-        conda activate rasterexplorer-dev
-        pytest
+      run: pytest
