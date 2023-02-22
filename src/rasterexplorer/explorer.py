@@ -69,11 +69,13 @@ def explore(
     return folium_map
 
 
-def _format_input_raster(input_raster: Any, band: int) -> RasterData:
+def _format_input_raster(
+    input_raster: Union[rasterio.DatasetReader, str, RasterData], band: int
+) -> RasterData:
     """Converts input data to a RasterData object.
 
     Args:
-        input_raster (Any): input raster.
+        input_raster (Union[rasterio.DatasetReader, str, RasterData]): input raster.
         band (int): band number.
 
     Raises:
@@ -105,7 +107,7 @@ def _add_to_map(
     tiles: str = "OpenStreetMap",
     attr: Optional[str] = None,
     add_layer_control: bool = True,
-    **kwargs
+    **kwargs,
 ) -> folium.Map:
     """Add raster data to a folium map.
 
@@ -143,7 +145,7 @@ def _add_to_map(
             tiles=tiles,
             attr=attr,
             zoom_start=kwargs.pop("zoom_start", 16),
-            **kwargs
+            **kwargs,
         )
         # Add a colorbar
         cbar = _create_cbar(cmap=cmap, vmin=vmin, vmax=vmax, caption=cbar_caption)
