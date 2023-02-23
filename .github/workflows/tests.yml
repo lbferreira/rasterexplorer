@@ -23,6 +23,9 @@ jobs:
           activate-environment: rasterexplorer-dev
           environment-file: environment-dev.yml
           auto-activate-base: false
+          miniforge-version: latest
+          miniforge-variant: Mambaforge
+          use-mamba: true
 
     - name: Package Test
       run: pytest
